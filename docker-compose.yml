@@ -1,0 +1,47 @@
+version: '3.1'
+
+services:
+  app-annonces-node:
+    container_name: "app-annonces-api-nodejs"
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - app-annonces-db
+      - app-annonces-mailhog
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./:/home/app:rw
+    ports:
+      - "3000:3000"
+    working_dir: /home/app
+
+  app-annonces-mailhog:
+    image: mailhog/mailhog
+    container_name: "app-annonces-mailhog"
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  app-annonces-db:
+    image: mariadb
+    container_name: "app-annonces-db"
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: api_annonces
+      MARIADB_USER: leo
+      MARIADB_PASSWORD: leo123
+    volumes:
+      - ./db-data:/var/lib/mysql:rw
+    ports:
+      - "3306:3306"
+
+  app-annonces-adminer:
+    image: adminer
+    container_name: "app-annonces-adminer"
+    restart: always
+    ports:
+      - "8080:8080"

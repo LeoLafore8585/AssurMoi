@@ -1,0 +1,14 @@
+{
+    "name": "api-annonces",
+    "version": "1.0.0",
+    "description": "API annonces avec Node et MySQL",
+    "main": "src/index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "nodemon src/index.js"
+    },
+    "dependencies": {
+        "express": "^4.19.2",
+        "mysql2": "^3.11.0"
+    }
+}
