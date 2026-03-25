@@ -1,42 +1,31 @@
 const express = require('express');
-const mysql = require('mysql2');
+const routes = require('./routes');
+const { sequelize } = require('./models');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+
+const swaggerDocument = YAML.load(path.join(__dirname, '../swagger.yaml'));
 
 app.use(express.json());
 
-const db = mysql.createConnection({
-  host: 'db',
-  user: 'leo',
-  password: 'leo123',
-  database: 'api_annonces'
-});
-
-db.connect((err) => {
-  if (err) {
-    console.error('Erreur connexion MySQL :', err.message);
-    return;
-  }
-  console.log('Connecté à MySQL');
-});
-
 app.get('/', (req, res) => {
-  res.send('API OK');
+  res.send('API AssurMoi OK');
 });
 
-app.get('/db-test', (req, res) => {
-  db.query('SELECT 1 + 1 AS result', (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json({
-      message: 'Connexion MySQL OK',
-      result: results[0].result
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api', routes);
+
+sequelize.authenticate()
+  .then(() => {
+    console.log('Connecté à la base de données avec Sequelize');
+    app.listen(PORT, () => {
+      console.log(`Serveur lancé sur http://localhost:${PORT}`);
     });
+  })
+  .catch((error) => {
+    console.error('Erreur connexion BDD :', error.message);
   });
-});
-
-app.listen(PORT, () => {
-  console.log(`Serveur lancé sur http://localhost:${PORT}`);
-});
