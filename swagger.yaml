@@ -1,0 +1,828 @@
+openapi: 3.0.3
+info:
+  title: API AssurMoi
+  version: 1.0.0
+  description: API de gestion des sinistres et dossiers de prise en charge
+
+servers:
+  - url: http://localhost:3000/api
+
+tags:
+  - name: Auth
+  - name: Utilisateurs
+  - name: Assurés
+  - name: Contrats
+  - name: Véhicules
+  - name: Sinistres
+  - name: Dossiers
+  - name: Étapes
+  - name: Indemnisations
+  - name: Facturations
+  - name: Notifications
+  - name: Historiques
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Connexion utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, mot_de_passe]
+              properties:
+                email:
+                  type: string
+                mot_de_passe:
+                  type: string
+      responses:
+        "200":
+          description: Connexion réussie
+        "401":
+          description: Identifiants invalides
+
+  /auth/verify-2fa:
+    post:
+      tags: [Auth]
+      summary: Vérification du code 2FA
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, code]
+              properties:
+                user_id:
+                  type: integer
+                code:
+                  type: string
+      responses:
+        "200":
+          description: Code valide
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Demande de réinitialisation du mot de passe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+      responses:
+        "200":
+          description: Email envoyé
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Réinitialiser le mot de passe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, nouveau_mot_de_passe]
+              properties:
+                token:
+                  type: string
+                nouveau_mot_de_passe:
+                  type: string
+      responses:
+        "200":
+          description: Mot de passe réinitialisé
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Récupérer l'utilisateur connecté
+      responses:
+        "200":
+          description: Utilisateur authentifié
+
+  /users:
+    get:
+      tags: [Utilisateurs]
+      summary: Lister les utilisateurs
+      responses:
+        "200":
+          description: Liste des utilisateurs
+    post:
+      tags: [Utilisateurs]
+      summary: Créer un utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: Utilisateur créé
+
+  /users/{id}:
+    get:
+      tags: [Utilisateurs]
+      summary: Détail d'un utilisateur
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Utilisateur trouvé
+    patch:
+      tags: [Utilisateurs]
+      summary: Modifier un utilisateur
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateInput"
+      responses:
+        "200":
+          description: Utilisateur modifié
+
+  /users/{id}/status:
+    patch:
+      tags: [Utilisateurs]
+      summary: Activer ou désactiver un utilisateur
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [actif]
+              properties:
+                actif:
+                  type: boolean
+      responses:
+        "200":
+          description: Statut mis à jour
+
+  /assures:
+    get:
+      tags: [Assurés]
+      summary: Lister les assurés
+      responses:
+        "200":
+          description: Liste des assurés
+    post:
+      tags: [Assurés]
+      summary: Créer un assuré
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssureInput"
+      responses:
+        "201":
+          description: Assuré créé
+
+  /assures/{id}:
+    get:
+      tags: [Assurés]
+      summary: Détail d'un assuré
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Assuré trouvé
+    patch:
+      tags: [Assurés]
+      summary: Modifier un assuré
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Assuré modifié
+
+  /contrats:
+    get:
+      tags: [Contrats]
+      summary: Lister les contrats
+      responses:
+        "200":
+          description: Liste des contrats
+    post:
+      tags: [Contrats]
+      summary: Créer un contrat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContratInput"
+      responses:
+        "201":
+          description: Contrat créé
+
+  /contrats/{id}:
+    get:
+      tags: [Contrats]
+      summary: Détail d'un contrat
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Contrat trouvé
+    patch:
+      tags: [Contrats]
+      summary: Modifier un contrat
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Contrat modifié
+
+  /vehicules:
+    get:
+      tags: [Véhicules]
+      summary: Lister les véhicules
+      responses:
+        "200":
+          description: Liste des véhicules
+    post:
+      tags: [Véhicules]
+      summary: Créer un véhicule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VehiculeInput"
+      responses:
+        "201":
+          description: Véhicule créé
+
+  /vehicules/{id}:
+    get:
+      tags: [Véhicules]
+      summary: Détail d'un véhicule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Véhicule trouvé
+    patch:
+      tags: [Véhicules]
+      summary: Modifier un véhicule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Véhicule modifié
+
+  /sinistres:
+    get:
+      tags: [Sinistres]
+      summary: Lister les sinistres
+      responses:
+        "200":
+          description: Liste des sinistres
+    post:
+      tags: [Sinistres]
+      summary: Créer un sinistre
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SinistreInput"
+      responses:
+        "201":
+          description: Sinistre créé
+
+  /sinistres/{id}:
+    get:
+      tags: [Sinistres]
+      summary: Détail d'un sinistre
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Sinistre trouvé
+    patch:
+      tags: [Sinistres]
+      summary: Modifier un sinistre
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Sinistre modifié
+
+  /sinistres/{id}/documents:
+    get:
+      tags: [Sinistres]
+      summary: Lister les documents d'un sinistre
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Liste des documents
+    post:
+      tags: [Sinistres]
+      summary: Ajouter un document à un sinistre
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Document ajouté
+
+  /dossiers:
+    get:
+      tags: [Dossiers]
+      summary: Lister les dossiers
+      responses:
+        "200":
+          description: Liste des dossiers
+    post:
+      tags: [Dossiers]
+      summary: Créer un dossier à partir d'un sinistre
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id_sinistre]
+              properties:
+                id_sinistre:
+                  type: integer
+      responses:
+        "201":
+          description: Dossier créé
+
+  /dossiers/{id}:
+    get:
+      tags: [Dossiers]
+      summary: Détail d'un dossier
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dossier trouvé
+    patch:
+      tags: [Dossiers]
+      summary: Modifier un dossier
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dossier modifié
+
+  /dossiers/{id}/statut:
+    patch:
+      tags: [Dossiers]
+      summary: Faire évoluer le statut d'un dossier
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [statut]
+              properties:
+                statut:
+                  type: string
+      responses:
+        "200":
+          description: Statut mis à jour
+
+  /dossiers/{id}/documents:
+    get:
+      tags: [Dossiers]
+      summary: Lister les documents d'un dossier
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Liste des documents
+    post:
+      tags: [Dossiers]
+      summary: Ajouter un document à un dossier
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Document ajouté
+
+  /dossiers/{id}/etapes:
+    get:
+      tags: [Étapes]
+      summary: Lister les étapes d'un dossier
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Liste des étapes
+    post:
+      tags: [Étapes]
+      summary: Ajouter une étape à un dossier
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Étape créée
+
+  /etapes/{id}:
+    patch:
+      tags: [Étapes]
+      summary: Modifier une étape
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Étape modifiée
+
+  /etapes/{id}/validation:
+    patch:
+      tags: [Étapes]
+      summary: Valider ou refuser une étape
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Validation mise à jour
+
+  /dossiers/{id}/indemnisation:
+    get:
+      tags: [Indemnisations]
+      summary: Voir l'indemnisation d'un dossier
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Indemnisation trouvée
+    post:
+      tags: [Indemnisations]
+      summary: Créer une indemnisation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Indemnisation créée
+
+  /indemnisations/{id}:
+    patch:
+      tags: [Indemnisations]
+      summary: Modifier une indemnisation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Indemnisation modifiée
+
+  /dossiers/{id}/facturations:
+    get:
+      tags: [Facturations]
+      summary: Lister les facturations d'un dossier
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Liste des facturations
+    post:
+      tags: [Facturations]
+      summary: Créer une facturation ou refacturation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Facturation créée
+
+  /facturations/{id}:
+    patch:
+      tags: [Facturations]
+      summary: Modifier une facturation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Facturation modifiée
+
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Lister les notifications
+      responses:
+        "200":
+          description: Liste des notifications
+    post:
+      tags: [Notifications]
+      summary: Créer une notification
+      responses:
+        "201":
+          description: Notification créée
+
+  /notifications/{id}/read:
+    patch:
+      tags: [Notifications]
+      summary: Marquer une notification comme lue
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Notification mise à jour
+
+  /historiques:
+    get:
+      tags: [Historiques]
+      summary: Lister l'historique global
+      responses:
+        "200":
+          description: Liste des historiques
+
+  /historiques/{type_entite}/{id_entite}:
+    get:
+      tags: [Historiques]
+      summary: Voir l'historique d'une entité
+      parameters:
+        - in: path
+          name: type_entite
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id_entite
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Historique de l'entité
+
+components:
+  schemas:
+    UserInput:
+      type: object
+      required: [nom, prenom, email, mot_de_passe_hash, id_role, actif]
+      properties:
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+        telephone:
+          type: string
+        mot_de_passe_hash:
+          type: string
+        id_role:
+          type: integer
+        actif:
+          type: boolean
+
+    UserUpdateInput:
+      type: object
+      properties:
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+        telephone:
+          type: string
+        id_role:
+          type: integer
+        actif:
+          type: boolean
+
+    AssureInput:
+      type: object
+      required: [nom, prenom, email, telephone]
+      properties:
+        id_utilisateur:
+          type: integer
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+        telephone:
+          type: string
+        adresse:
+          type: string
+        code_postal:
+          type: string
+        ville:
+          type: string
+
+    ContratInput:
+      type: object
+      required: [reference_contrat, id_assure, type_contrat]
+      properties:
+        reference_contrat:
+          type: string
+        id_assure:
+          type: integer
+        type_contrat:
+          type: string
+        franchise:
+          type: number
+        date_debut:
+          type: string
+          format: date-time
+        date_fin:
+          type: string
+          format: date-time
+        actif:
+          type: boolean
+
+    VehiculeInput:
+      type: object
+      required: [id_assure, immatriculation, marque, modele]
+      properties:
+        id_assure:
+          type: integer
+        immatriculation:
+          type: string
+        marque:
+          type: string
+        modele:
+          type: string
+        annee:
+          type: integer
+        valeur_argus:
+          type: number
+
+    SinistreInput:
+      type: object
+      required:
+        - id_contrat
+        - id_vehicule
+        - id_assure
+        - nom_conducteur
+        - prenom_conducteur
+        - conducteur_est_assure
+        - date_heure_appel
+        - date_heure_sinistre
+        - contexte
+        - responsabilite_engagee
+        - taux_responsabilite
+        - statut
+        - cree_par
+      properties:
+        id_contrat:
+          type: integer
+        id_vehicule:
+          type: integer
+        id_assure:
+          type: integer
+        nom_conducteur:
+          type: string
+        prenom_conducteur:
+          type: string
+        conducteur_est_assure:
+          type: boolean
+        date_heure_appel:
+          type: string
+          format: date-time
+        date_heure_sinistre:
+          type: string
+          format: date-time
+        contexte:
+          type: string
+        responsabilite_engagee:
+          type: boolean
+        taux_responsabilite:
+          type: number
+        statut:
+          type: string
+        cree_par:
+          type: integer
