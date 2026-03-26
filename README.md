@@ -44,11 +44,65 @@ L’API utilise :
 * JWT (Bearer Token)
 * Authentification à 2 facteurs (2FA)
 
-### Étapes :
+### 🔑 Comment se connecter
 
-1. `/auth/login`
-2. `/auth/verify-2fa`
-3. Utiliser le token dans les requêtes :
+#### 1. Faire le login
+
+```http
+POST /api/auth/login
+```
+
+Body :
+
+```json
+{
+  "email": "test.test@test.fr",
+  "mot_de_passe": "Test123456@"
+}
+```
+
+👉 Réponse :
+
+```json
+{
+  "requires_2fa": true,
+  "user_id": 1,
+  "code_demo": "123456"
+}
+```
+
+⚠️ Le champ `code_demo` est utilisé pour simuler le code 2FA.
+
+---
+
+#### 2. Vérifier le code 2FA
+
+```http
+POST /api/auth/verify-2fa
+```
+
+Body :
+
+```json
+{
+  "user_id": 1,
+  "code": "123456"
+}
+```
+
+👉 Réponse :
+
+```json
+{
+  "token": "xxxxx"
+}
+```
+
+---
+
+#### 3. Utiliser le token
+
+Ajouter dans les headers de chaque requête :
 
 ```
 Authorization: Bearer VOTRE_TOKEN
@@ -76,15 +130,9 @@ Authorization: Bearer VOTRE_TOKEN
 
 ---
 
-## 🛠️ Stack technique
+## 🔑 Compte de test (Admin)
 
-* Node.js / Express
-* Sequelize (ORM)
-* MariaDB
-* Docker
+Pour faciliter les tests, un compte administrateur est disponible :
 
----
-
-## 👨‍💻 Auteur
-
-Projet réalisé dans le cadre d’un exercice de développement M2.
+* Email : [test.test@test.fr](mailto:test.test@test.fr)
+* Mot de passe : Test123456@
